@@ -16,9 +16,9 @@ class TokenObserver
      */
     public function created(Token $token)
     {
-      Tag::created([
-         'name' => TagGeneratorService::generator($token->name)
-       ]);
+        Tag::create([
+            'name' => TagGeneratorService::generator($token->name)
+        ]);
     }
 
     /**
@@ -29,11 +29,11 @@ class TokenObserver
      */
     public function updated(Token $token)
     {
-       if (!$token->tag()) {
-           Tag::created([
-               'name' => TagGeneratorService::generator($token->name)
-           ]);
-       }
+        if (!$token->tag()) {
+            Tag::create([
+                'name' => TagGeneratorService::generator($token->name)
+            ]);
+        }
     }
 
     /**
