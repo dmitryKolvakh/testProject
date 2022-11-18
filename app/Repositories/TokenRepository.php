@@ -2,10 +2,11 @@
 
 namespace App\Repositories;
 
-use App\Models\Tag;
 use App\Models\Token;
 use App\Service\Filter\TokenSearchFilter;
+use App\Service\GeoValidationService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class TokenRepository implements TokenRepositoryInterface
@@ -26,7 +27,6 @@ class TokenRepository implements TokenRepositoryInterface
                 $tokenSearchFilter->getPage()
             );
 
-        //dd($paginated->setCollection($paginated->getCollection()));
         return $paginated->setCollection($paginated->getCollection());
     }
 
@@ -60,4 +60,45 @@ class TokenRepository implements TokenRepositoryInterface
         return $builder;
     }
 
+    /**
+     * @param TokenSearchFilter $tokenSearchFilter
+     *
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getPaginatedCollectionByGeoFilter(TokenSearchFilter $tokenSearchFilter): LengthAwarePaginator
+    {
+        /** @var LengthAwarePaginator $paginated */
+        $tokens = $this->getQueryBuilderWithGeoFilter($tokenSearchFilter);
+
+        return new LengthAwarePaginator(
+            $tokens->forPage($tokenSearchFilter->getPage(),
+            $tokenSearchFilter->getPerPage()),
+            $tokens->count(),
+            $tokenSearchFilter->getPerPage(),
+            $tokenSearchFilter->getPage()
+        );
+    }
+
+    /**
+     * @param TokenSearchFilter $filter
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    private function getQueryBuilderWithGeoFilter(TokenSearchFilter $filter): Collection
+    {
+        $centerPoint = [
+            'lat' => $filter->getLat(),
+            'lng' => $filter->getLng(),
+        ];
+
+        return Token::all()->filter(function ($item) use ($centerPoint, $filter) {
+            return GeoValidationService::inCircleRadius(
+                $centerPoint,
+                [
+                'lat' => json_decode($item->location)->latitude,
+                'lng' => json_decode($item->location)->longitude,
+                ],
+                $filter->getRadius()
+            );
+        })->values();
+    }
 }

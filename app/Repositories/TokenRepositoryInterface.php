@@ -15,4 +15,10 @@ interface TokenRepositoryInterface
      */
     public function getPaginatedCollectionByFilter(TokenSearchFilter $tokenSearchFilter): LengthAwarePaginator;
 
+    /**
+     * @param TokenSearchFilter $tokenSearchFilter
+     *
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getPaginatedCollectionByGeoFilter(TokenSearchFilter $tokenSearchFilter): LengthAwarePaginator;
 }

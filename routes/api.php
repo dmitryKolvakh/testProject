@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TokensController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,4 +19,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/tokens', '\App\Http\Controllers\TokensController@index');
+Route::get('/tokens', [TokensController::class, 'index']);
+Route::get('/tokens-geo-search', [TokensController::class, 'geoSearch']);
